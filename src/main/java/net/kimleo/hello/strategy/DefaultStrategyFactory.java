@@ -2,7 +2,7 @@ package net.kimleo.hello.strategy;
 
 import net.kimleo.hello.annotation.Component;
 import net.kimleo.hello.annotation.Factory;
-import net.kimleo.hello.message.MessageBody;
+import net.kimleo.hello.message.Message;
 import net.kimleo.hello.message.MessageResolver;
 
 @Factory(product = MessageStrategy.class)
@@ -20,9 +20,9 @@ public class DefaultStrategyFactory implements StrategyFactory {
         return instance;
     }
 
-    public MessageStrategy createStrategy(final MessageBody messageBody, MessageResolver messageResolver) {
+    public MessageStrategy createStrategy(final Message message, MessageResolver messageResolver) {
         DefaultMessageStrategy strategy = new DefaultMessageStrategy(messageResolver);
-        strategy.setMessageBody(messageBody);
+        strategy.setMessage(message);
         return strategy;
     }
 

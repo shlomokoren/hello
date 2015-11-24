@@ -7,22 +7,24 @@ import net.kimleo.hello.validate.Validator;
 import java.io.PrintStream;
 
 @Component
-public class PrintTokenVisitor implements TokenVisitor {
+public class ConcreteTokenVisitor implements TokenVisitor {
 
     private final Validator<String> validator;
-    private PrintStream stream = System.out;
 
-    public PrintTokenVisitor(Validator<String> validator) {
+    public ConcreteTokenVisitor(Validator<String> validator) {
         this.validator = validator;
     }
 
     @Override
     public void visit(String token) {
-        if (validator.validate(token))
-            stream.println(token);
+        validator.validate(token);
     }
 
-    public void setStream(PrintStream stream) {
-        this.stream = stream;
+    public TokenVisitor withStream(PrintStream stream) {
+        return token -> {
+            visit(token);
+            if (validator.validate(token))
+                stream.println(token);
+        };
     }
 }

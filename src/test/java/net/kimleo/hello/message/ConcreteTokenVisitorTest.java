@@ -9,10 +9,10 @@ import java.io.PrintStream;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class PrintTokenVisitorTest {
+public class ConcreteTokenVisitorTest {
 
     public static final String HELLO_TOKEN = "hello";
-    private PrintTokenVisitor visitor;
+    private ConcreteTokenVisitor visitor;
     private PrintStream stream;
     private Validator<String> validator;
 
@@ -20,14 +20,13 @@ public class PrintTokenVisitorTest {
     public void setUp() throws Exception {
         stream = mock(PrintStream.class);
         validator = mock(Validator.class);
-        visitor = new PrintTokenVisitor(validator);
-        visitor.setStream(stream);
+        visitor = new ConcreteTokenVisitor(validator);
         when(validator.validate(anyString())).thenReturn(true);
     }
 
     @Test
     public void should_print_to_stream() throws Exception {
-        visitor.visit(HELLO_TOKEN);
+        visitor.withStream(stream).visit(HELLO_TOKEN);
 
         verify(stream).println(HELLO_TOKEN);
     }

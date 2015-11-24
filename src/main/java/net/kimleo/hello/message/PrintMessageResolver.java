@@ -2,21 +2,22 @@ package net.kimleo.hello.message;
 
 import net.kimleo.hello.annotation.Component;
 import net.kimleo.hello.text.TokenList;
-import net.kimleo.hello.text.TokenVisitor;
+
+import java.io.PrintStream;
 
 @Component
 public class PrintMessageResolver implements MessageResolver {
 
     private final MessageParser<TokenList> parser;
-    private TokenVisitor visitor;
+    private ConcreteTokenVisitor visitor;
 
-    public PrintMessageResolver(MessageParser<TokenList> parser, TokenVisitor visitor) {
+    public PrintMessageResolver(MessageParser<TokenList> parser, ConcreteTokenVisitor visitor) {
         this.parser = parser;
         this.visitor = visitor;
     }
 
     @Override
-    public void resolve(String message) {
-        parser.parse(message).accept(visitor);
+    public void resolve(String message, PrintStream stream) {
+        parser.parse(message).accept(visitor.withStream(stream));
     }
 }

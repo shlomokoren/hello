@@ -1,12 +1,12 @@
 package net.kimleo.hello;
 
-import net.kimleo.hello.message.MessageBody;
-import net.kimleo.hello.message.MessageResolver;
-import net.kimleo.hello.message.PrintMessageResolver;
+import net.kimleo.hello.message.*;
 import net.kimleo.hello.strategy.DefaultMessageStrategy;
 import net.kimleo.hello.strategy.StrategyFactory;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.PrintStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -14,30 +14,46 @@ import static org.mockito.Mockito.*;
 public class HelloWorldAppTest {
 
     public static final String HELLO_WORLD_MESSAGE = "hello world!";
-    public static final MessageBody MESSAGE_BODY = new MessageBody();
-    private StrategyFactory factory;
+    public Message message;
+
+
+    private StrategyFactory strategyFactory;
     private HelloWorldApp app;
     private MessageResolver printMessageResolver;
+    private MessageFactory messageFactory;
+    private PrintStream stream;
 
     @Before
     public void setUp() throws Exception {
-        factory = mock(StrategyFactory.class);
+        strategyFactory = mock(StrategyFactory.class);
         printMessageResolver = mock(PrintMessageResolver.class);
-        app = new HelloWorldApp(factory, printMessageResolver);
-        app.setMessageBody(MESSAGE_BODY);
+        messageFactory = mock(MessageFactory.class);
+        stream = mock(PrintStream.class);
         DefaultMessageStrategy strategy = new DefaultMessageStrategy(printMessageResolver);
-        strategy.setMessageBody(MESSAGE_BODY);
-        when(factory.createStrategy(MESSAGE_BODY, printMessageResolver))
+        message = DefaultMessageFactory.getInstance().create(HELLO_WORLD_MESSAGE, stream);
+        strategy.setMessage(message);
+        when(strategyFactory.createStrategy(any(Message.class), eq(printMessageResolver)))
                 .thenReturn(strategy);
+
+        when(messageFactory.create(anyString(), any(PrintStream.class))).thenReturn(message);
+
+        app = new HelloWorldApp(strategyFactory, printMessageResolver, messageFactory);
     }
 
     @Test
     public void should_integrated_successfully() throws Exception {
-        app.say(HELLO_WORLD_MESSAGE);
+        app.say(message);
 
-        verify(factory).createStrategy(MESSAGE_BODY, printMessageResolver);
-        verify(printMessageResolver).resolve(HELLO_WORLD_MESSAGE);
-        assertEquals(MESSAGE_BODY.getPayload(), HELLO_WORLD_MESSAGE);
+        verify(strategyFactory).createStrategy(message, printMessageResolver);
+        verify(printMessageResolver).resolve(HELLO_WORLD_MESSAGE, stream);
+        assertEquals(message.getPayload(), HELLO_WORLD_MESSAGE);
+    }
+
+    @Test
+    public void should_run_run() throws Exception {
+        app.run();
+
+        verify(messageFactory).create(HELLO_WORLD_MESSAGE, System.out);
     }
 
     @Test

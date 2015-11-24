@@ -1,7 +1,6 @@
 package net.kimleo.hello.message;
 
 import net.kimleo.hello.text.TokenList;
-import net.kimleo.hello.text.TokenVisitor;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,21 +14,22 @@ public class PrintMessageResolverTest {
     public static final String WORLD = "world!";
     private MessageResolver resolver;
     private MessageParser parser;
-    private TokenVisitor visitor;
+    private ConcreteTokenVisitor visitor;
     private TokenList tokens;
 
     @Before
     public void setUp() throws Exception {
-        visitor = mock(TokenVisitor.class);
+        visitor = mock(ConcreteTokenVisitor.class);
         parser = mock(MessageParser.class);
         tokens = mock(TokenList.class);
+        when(visitor.withStream(any())).thenReturn(visitor);
         when(parser.parse(anyString())).thenReturn(tokens);
         resolver = new PrintMessageResolver(parser, visitor);
     }
 
     @Test
     public void should_resolve_message() throws Exception {
-        resolver.resolve(HELLO_WORLD_MESSAGE);
+        resolver.resolve(HELLO_WORLD_MESSAGE, System.out);
 
         verify(parser).parse(HELLO_WORLD_MESSAGE);
         verify(tokens).accept(visitor);

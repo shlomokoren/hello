@@ -1,6 +1,6 @@
 package net.kimleo.hello.strategy;
 
-import net.kimleo.hello.message.MessageBody;
+import net.kimleo.hello.message.Message;
 import net.kimleo.hello.message.MessageResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,15 +15,15 @@ public class DefaultStrategyFactoryTest {
 
     public static final String HELLO_WORLD_MESSAGE = "hello world!";
     private StrategyFactory factory;
-    private MessageBody messageBody;
+    private Message message;
     private MessageResolver messageResolver;
 
     @Before
     public void setUp() throws Exception {
         factory = DefaultStrategyFactory.getInstance();
-        messageBody = mock(MessageBody.class);
+        message = mock(Message.class);
         messageResolver = mock(MessageResolver.class);
-        when(messageBody.getPayload()).thenReturn(HELLO_WORLD_MESSAGE);
+        when(message.getPayload()).thenReturn(HELLO_WORLD_MESSAGE);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class DefaultStrategyFactoryTest {
 
     @Test
     public void should_create_message_strategy() throws Exception {
-        MessageStrategy strategy = factory.createStrategy(messageBody, messageResolver);
+        MessageStrategy strategy = factory.createStrategy(message, messageResolver);
 
         assertNotNull(strategy);
     }

@@ -1,40 +1,44 @@
 package net.kimleo.hello.strategy;
 
-import net.kimleo.hello.message.MessageBody;
+import net.kimleo.hello.message.Message;
 import net.kimleo.hello.message.MessageResolver;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.PrintStream;
 
 import static org.mockito.Mockito.*;
 
 public class DefaultMessageStrategyTest {
 
     private static final String HELLO_WORLD_MESSAGE = "hello world";
-    private MessageBody messageBody;
+    private Message message;
     private MessageResolver messageResolver;
     private DefaultMessageStrategy strategy;
+    private PrintStream stream;
 
     @Before
     public void setUp() throws Exception {
-        messageBody = mock(MessageBody.class);
+        message = mock(Message.class);
         messageResolver = mock(MessageResolver.class);
-        when(messageBody.getPayload()).thenReturn(HELLO_WORLD_MESSAGE);
+        when(message.getPayload()).thenReturn(HELLO_WORLD_MESSAGE);
         strategy = new DefaultMessageStrategy(messageResolver);
-        strategy.setMessageBody(messageBody);
+        strategy.setMessage(message);
+        stream = mock(PrintStream.class);
     }
 
     @Test
     public void should_use_message_payload() throws Exception {
-        strategy.sendMessage();
+        strategy.sendMessage(stream);
 
-        verify(messageBody).getPayload();
+        verify(message).getPayload();
     }
 
     @Test
     public void should_print_message_to_stream() throws Exception {
-        strategy.sendMessage();
+        strategy.sendMessage(System.out);
 
-        verify(messageResolver).resolve(HELLO_WORLD_MESSAGE);
+        verify(messageResolver).resolve(HELLO_WORLD_MESSAGE, System.out);
     }
 
 
