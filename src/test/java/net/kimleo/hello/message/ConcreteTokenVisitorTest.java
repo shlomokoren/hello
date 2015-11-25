@@ -20,7 +20,7 @@ public class ConcreteTokenVisitorTest {
     public void setUp() throws Exception {
         stream = mock(PrintStream.class);
         validator = mock(Validator.class);
-        visitor = new ConcreteTokenVisitor(validator);
+        visitor = new ConcreteTokenVisitor();
         when(validator.validate(anyString())).thenReturn(true);
     }
 

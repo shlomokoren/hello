@@ -9,11 +9,7 @@ import java.io.PrintStream;
 @Component
 public class ConcreteTokenVisitor implements TokenVisitor {
 
-    private final Validator<String> validator;
-
-    public ConcreteTokenVisitor(Validator<String> validator) {
-        this.validator = validator;
-    }
+    private Validator<String> validator;
 
     @Override
     public void visit(String token) {

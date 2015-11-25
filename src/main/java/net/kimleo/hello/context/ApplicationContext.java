@@ -2,37 +2,58 @@ package net.kimleo.hello.context;
 
 import net.kimleo.hello.annotation.Component;
 import net.kimleo.hello.annotation.Factory;
+import net.kimleo.hello.injection.ConstructorInjector;
+import net.kimleo.hello.injection.FieldInjector;
+import net.kimleo.hello.injection.Injector;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationContext implements Context {
 
 
+    public static final String SINGLETON_CREATION_METHOD = "getInstance";
     Map<Class, Object> context = new ConcurrentHashMap<>();
     Map<Class, Class> components = new ConcurrentHashMap<>();
+    Injector injectors[] = new Injector[]{new ConstructorInjector(this), new FieldInjector(this)};
 
     @Override
-    public void addComponents(Class[] classes) throws NoSuchMethodException, InstantiationException,
+    public void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException {
         for (Class aClass : classes) {
             addToComponentMappings(aClass);
         }
-
         initializeContext();
     }
 
     @Override
-    public boolean isComponentClass(Class intf) {
-        return intf.getAnnotation(Component.class) != null;
+    public boolean isComponentClass(Class clz) {
+        return clz.getAnnotation(Component.class) != null;
     }
 
     @Override
     public <T> T getInstance(Class<? extends T> aClass) {
-        return (T) context.get(components.get(aClass));
+        if (isContextComponent(aClass)) {
+            addComponent(aClass);
+            return (T) context.get(getRealComponent(aClass));
+        }
+        return null;
+    }
+
+    @Override
+    public Class getRealComponent(Class param) {
+        return components.get(param);
+    }
+
+    @Override
+    public boolean isContextComponent(Class param) {
+        return components.containsKey(param);
+    }
+
+    @Override
+    public void addComponent(Class component) {
+        addToContextIfItIsAComponent(getRealComponent(component));
     }
 
     private void addToComponentMappings(Class clz) {
@@ -47,36 +68,38 @@ public class ApplicationContext implements Context {
         }
     }
 
-    private void initializeContext() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void initializeContext() {
         for (Class aClass : components.keySet()) {
             addToContextIfItIsAComponent(aClass);
         }
     }
 
-    private void addToContextIfItIsAComponent(Class clz)
-            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void addToContextIfItIsAComponent(Class clz) {
         if (!clz.isInterface() && isComponentClass(clz)) {
             context.put(clz, createInstance(clz));
         }
     }
 
-    private Object createInstance(Class clz)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Object createInstance(Class clz) {
         if (context.containsKey(clz)) return context.get(clz);
         if (clz.getAnnotation(Factory.class) != null) {
-            return clz.getDeclaredMethod("getInstance").invoke(clz);
+            return createNewFactory(clz);
         }
-        Object result = null;
-        Constructor[] constructors = clz.getDeclaredConstructors();
-        for (Constructor ctor : constructors) {
-            Class[] parameterTypes = ctor.getParameterTypes();
-            ArrayList<Object> objects = new ArrayList<>();
-            for (Class param : parameterTypes) {
-                addToContextIfItIsAComponent(components.get(param));
-                objects.add(context.get(components.get(param)));
+        for (Injector injector : injectors) {
+            Object instance = injector.inject(clz);
+            if (instance != null) {
+                return instance;
             }
-            result = ctor.newInstance(objects.toArray());
         }
-        return result;
+        return null;
+    }
+
+    private Object createNewFactory(Class clz) {
+        try {
+            return clz.getDeclaredMethod(SINGLETON_CREATION_METHOD).invoke(clz);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
