@@ -7,8 +7,11 @@ import net.kimleo.hello.injection.FieldInjector;
 import net.kimleo.hello.injection.Injector;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Arrays.asList;
 
 public class ApplicationContext implements Context {
 
@@ -16,7 +19,10 @@ public class ApplicationContext implements Context {
     public static final String SINGLETON_CREATION_METHOD = "getInstance";
     Map<Class, Object> context = new ConcurrentHashMap<>();
     Map<Class, Class> components = new ConcurrentHashMap<>();
-    Injector injectors[] = new Injector[]{new ConstructorInjector(this), new FieldInjector(this)};
+    List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
+
+    public ApplicationContext() {
+    }
 
     @Override
     public void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
