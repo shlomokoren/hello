@@ -1,6 +1,7 @@
 package net.kimleo.hello.message;
 
 import net.kimleo.hello.annotation.Component;
+import net.kimleo.hello.annotation.Inject;
 import net.kimleo.hello.text.TokenVisitor;
 import net.kimleo.hello.validate.Validator;
 
@@ -9,6 +10,7 @@ import java.io.PrintStream;
 @Component
 public class ConcreteTokenVisitor implements TokenVisitor {
 
+    @Inject
     private Validator<String> validator;
 
     @Override

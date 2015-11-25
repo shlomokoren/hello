@@ -1,5 +1,6 @@
 package net.kimleo.hello.injection;
 
+import net.kimleo.hello.annotation.Inject;
 import net.kimleo.hello.context.Context;
 
 import java.lang.reflect.Field;
@@ -20,7 +21,7 @@ public class FieldInjector implements Injector {
 
             Field[] fields = clz.getDeclaredFields();
             for (Field field : fields) {
-                if (context.isContextComponent(field.getDeclaringClass())) {
+                if (isInjectable(field) && context.isContextComponent(field.getDeclaringClass())) {
                     setField(instance, field);
                 }
             }
@@ -31,10 +32,30 @@ public class FieldInjector implements Injector {
         return null;
     }
 
+    private boolean isInjectable(Field field) {
+        return field.getAnnotation(Inject.class) != null;
+    }
+
     private <T> void setField(T instance, Field field) throws IllegalAccessException {
         boolean accessible = field.isAccessible();
         field.setAccessible(true);
-        field.set(instance, context.getInstance(field.getType()));
+        if (isSpecifiedTypeValid(field)) {
+            field.set(instance, context.getInstance(getSpecifiedType(field)));
+        } else {
+            field.set(instance, context.getInstance(field.getType()));
+        }
         field.setAccessible(accessible);
+    }
+
+    private boolean isSpecifiedTypeValid(Field field) {
+        return isSpecifiedType(field) && field.getType().isAssignableFrom(getSpecifiedType(field));
+    }
+
+    private boolean isSpecifiedType(Field field) {
+        return isInjectable(field) && getSpecifiedType(field) != Object.class;
+    }
+
+    private Class<?> getSpecifiedType(Field field) {
+        return field.getAnnotation(Inject.class).value();
     }
 }
