@@ -1,5 +1,6 @@
 package net.kimleo.hello.injection;
 
+import net.kimleo.hello.annotation.Construct;
 import net.kimleo.hello.context.ApplicationContext;
 import net.kimleo.hello.context.Context;
 
@@ -38,12 +39,17 @@ public class ConstructorInjector implements Injector {
 
     private Constructor getInjectedConstructor(Constructor[] constructors) {
         for (Constructor ctor : constructors) {
+            if (!isConstructable(ctor)) continue;
             Class[] parameterTypes = ctor.getParameterTypes();
             if (asList(parameterTypes).stream().allMatch(context::isContextComponent)) {
                 return ctor;
             }
         }
         return null;
+    }
+
+    private boolean isConstructable(Constructor ctor) {
+        return ctor.getAnnotation(Construct.class) != null;
     }
 
 }

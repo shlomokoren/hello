@@ -1,6 +1,7 @@
 package net.kimleo.hello.strategy;
 
 import net.kimleo.hello.annotation.Component;
+import net.kimleo.hello.annotation.Construct;
 import net.kimleo.hello.message.Message;
 import net.kimleo.hello.message.MessageResolver;
 
@@ -12,6 +13,7 @@ public class DefaultMessageStrategy implements MessageStrategy {
     private final MessageResolver messageResolver;
     private Message message;
 
+    @Construct
     public DefaultMessageStrategy(MessageResolver messageResolver) {
         this.messageResolver = messageResolver;
     }

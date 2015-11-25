@@ -1,6 +1,7 @@
 package net.kimleo.hello.message;
 
 import net.kimleo.hello.annotation.Component;
+import net.kimleo.hello.annotation.Construct;
 import net.kimleo.hello.text.TokenList;
 import net.kimleo.hello.text.Tokenizer;
 
@@ -9,6 +10,7 @@ public class TokenizedMessageParser implements MessageParser<TokenList> {
 
     private final Tokenizer tokenizer;
 
+    @Construct
     public TokenizedMessageParser(Tokenizer tokenizer) {
         this.tokenizer = tokenizer;
     }

@@ -10,7 +10,6 @@ public class FieldInjector implements Injector {
     private final Context context;
 
     public FieldInjector(Context context) {
-
         this.context = context;
     }
 
