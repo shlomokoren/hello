@@ -29,9 +29,8 @@ public class HelloWorldAppTest {
         printMessageResolver = mock(PrintMessageResolver.class);
         messageFactory = mock(MessageFactory.class);
         stream = mock(PrintStream.class);
-        DefaultMessageStrategy strategy = new DefaultMessageStrategy(printMessageResolver);
         message = DefaultMessageFactory.getInstance().create(HELLO_WORLD_MESSAGE, stream);
-        strategy.setMessage(message);
+        DefaultMessageStrategy strategy = new DefaultMessageStrategy(printMessageResolver, message);
         when(strategyFactory.createStrategy(any(Message.class), eq(printMessageResolver)))
                 .thenReturn(strategy);
 

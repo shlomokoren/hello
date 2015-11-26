@@ -21,9 +21,7 @@ public class DefaultStrategyFactory implements StrategyFactory {
     }
 
     public MessageStrategy createStrategy(final Message message, MessageResolver messageResolver) {
-        DefaultMessageStrategy strategy = new DefaultMessageStrategy(messageResolver);
-        strategy.setMessage(message);
-        return strategy;
+        return new DefaultMessageStrategy(messageResolver, message);
     }
 
 }

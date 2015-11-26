@@ -7,7 +7,7 @@ import net.kimleo.hello.text.TokenList;
 import java.io.PrintStream;
 
 @Component
-public class PrintMessageResolver implements MessageResolver {
+public class PrintMessageResolver implements MessageResolver<PrintStream> {
 
     private final MessageParser<TokenList> parser;
     private ConcreteTokenVisitor visitor;

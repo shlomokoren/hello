@@ -22,8 +22,7 @@ public class DefaultMessageStrategyTest {
         message = mock(Message.class);
         messageResolver = mock(MessageResolver.class);
         when(message.getPayload()).thenReturn(HELLO_WORLD_MESSAGE);
-        strategy = new DefaultMessageStrategy(messageResolver);
-        strategy.setMessage(message);
+        strategy = new DefaultMessageStrategy(messageResolver, message);
         stream = mock(PrintStream.class);
     }
 
