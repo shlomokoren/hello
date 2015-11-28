@@ -1,7 +1,9 @@
-.idea
+/.gradletasknamecache
 .gradle
+
 build
+
+.idea
 *.iml
 *.ipr
-gradle
-gradlew*
+*.iws
