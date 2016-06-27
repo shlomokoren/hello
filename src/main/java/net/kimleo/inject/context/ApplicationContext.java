@@ -41,10 +41,12 @@ public class ApplicationContext implements Context {
             IllegalAccessException, InvocationTargetException {
         for (Class aClass : classes) {
             if (aClass.getAnnotation(Config.class) != null) {
+                LOGGER.info("Configuration found {}", aClass);
                 Method[] methods = aClass.getMethods();
                 for (Method method : methods) {
                     if (method.getAnnotation(Bean.class) != null) {
                         Class<?> type = method.getReturnType();
+                        LOGGER.debug("Configuration for bean type {} with dependency {}", type, method);
                         configurations.put(type, method);
                         components.put(type, type);
                     }
@@ -62,6 +64,7 @@ public class ApplicationContext implements Context {
 
     @Override
     public <T> T getInstance(Class<? extends T> aClass) {
+        LOGGER.debug("Try get instance of {}", aClass);
         if (isContextComponent(aClass)) {
             addComponent(aClass);
             return (T) context.get(getRealComponent(aClass));
@@ -71,7 +74,9 @@ public class ApplicationContext implements Context {
 
     @Override
     public Class getRealComponent(Class param) {
-        return components.get(param);
+        Class realComponent = components.get(param);
+        LOGGER.debug("Using {} instead of {}", realComponent, param);
+        return realComponent;
     }
 
     @Override
@@ -107,7 +112,7 @@ public class ApplicationContext implements Context {
             Class[] interfaces = clz.getInterfaces();
             for (Class theInterface : interfaces) {
                 if (isComponentClass(theInterface)) {
-                    LOGGER.debug("Components {} registered for interface {}", clz, theInterface);
+                    LOGGER.debug("Component {} registered for interface {}", clz, theInterface);
                     components.put(theInterface, clz);
                 }
             }
@@ -115,6 +120,7 @@ public class ApplicationContext implements Context {
     }
 
     private void initializeContext() {
+        configurations.keySet().forEach(this::addToContextIfItIsAComponent);
         components.keySet().forEach(this::addToContextIfItIsAComponent);
     }
 
@@ -125,11 +131,16 @@ public class ApplicationContext implements Context {
     }
 
     private Object createInstance(Class clz) {
-        if (context.containsKey(clz)) return context.get(clz);
-        else if (configurations.containsKey(clz)) {
+        if (context.containsKey(clz)) {
+            LOGGER.debug("{} instance existed, no need to create", clz);
+            return context.get(clz);
+        }
+        if (configurations.containsKey(clz)) {
+            LOGGER.debug("{} instance was configured, creating from configuration", clz);
             return createFromConfiguration(clz);
         }
         if (clz.getAnnotation(Factory.class) != null) {
+            LOGGER.debug("{} is a factory, creating using factory specified method", clz);
             Object object = createNewFactory(clz);
             Factory annotation = (Factory) clz.getAnnotation(Factory.class);
             if (annotation.qualifier().isEmpty()) {
@@ -141,7 +152,9 @@ public class ApplicationContext implements Context {
         }
         for (Injector injector : injectors) {
             Object instance = injector.inject(clz);
+            LOGGER.debug("Trying injector {} to create instance of {}", injector.getClass(), clz);
             if (instance != null) {
+                LOGGER.debug("Injected {} successfully with injector {}", clz, injector.getClass());
                 return instance;
             }
         }
@@ -153,16 +166,17 @@ public class ApplicationContext implements Context {
         Bean annotation = method.getAnnotation(Bean.class);
         Object configuration = createInstance(method.getDeclaringClass());
         ArrayList<Object> params = new ArrayList<>();
+        LOGGER.debug("Creating {} from configuration {}", clz, configuration.getClass());
         for (Class<?> paramType : method.getParameterTypes()) {
             params.add(getInstance(paramType));
         }
         Object[] paramArray = params.toArray();
         try {
             Object object = method.invoke(configuration, paramArray);
+            LOGGER.debug("Add default qualifier {} for {}", method.getName(), clz);
             qualifiedContext.put(clz, new QualifiedComponent(method.getName(), object));
-            if (annotation.qualifier().isEmpty()) {
-                qualifiedContext.put(clz, new QualifiedComponent("", object));
-            } else {
+            if (!annotation.qualifier().isEmpty()) {
+                LOGGER.debug("Qualifier {} found for {}", annotation.qualifier(), clz);
                 qualifiedContext.put(clz, new QualifiedComponent(annotation.qualifier(), object));
             }
             return object;

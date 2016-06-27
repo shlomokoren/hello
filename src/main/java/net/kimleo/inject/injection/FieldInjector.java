@@ -4,11 +4,14 @@ import net.kimleo.inject.annotation.Component;
 import net.kimleo.inject.annotation.Inject;
 import net.kimleo.inject.annotation.Qualified;
 import net.kimleo.inject.context.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
 public class FieldInjector implements Injector {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(FieldInjector.class);
     private final Context context;
 
     public FieldInjector(Context context) {
@@ -52,6 +55,7 @@ public class FieldInjector implements Injector {
 
         if (field.getAnnotation(Qualified.class) != null) {
             Qualified qualified = field.getAnnotation(Qualified.class);
+            LOGGER.debug("Qualified field {} found with qualifier {}", field, qualified.value());
             field.set(instance, context.getQualifiedInstance(finalType, qualified.value()));
         }
         else {
