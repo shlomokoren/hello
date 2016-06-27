@@ -33,11 +33,11 @@ public class ApplicationContext implements Context {
 
     private Map<Class, Method> configurations = new ConcurrentHashMap<>();
 
-    public ApplicationContext() {
+    public ApplicationContext(Class... classes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        addComponents(classes);
     }
 
-    @Override
-    public void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
+    private void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException {
         for (Class aClass : classes) {
             if (aClass.getAnnotation(Config.class) != null) {
@@ -57,9 +57,8 @@ public class ApplicationContext implements Context {
         initializeContext();
     }
 
-    @Override
-    public boolean isComponentClass(Class clz) {
-        return clz.getAnnotation(Component.class) != null;
+    private boolean isComponentClass(Class clz) {
+        return clz.getAnnotation(Component.class) != null || clz.getAnnotation(Application.class) != null;
     }
 
     @Override
@@ -72,8 +71,7 @@ public class ApplicationContext implements Context {
         return null;
     }
 
-    @Override
-    public Class getRealComponent(Class param) {
+    private Class getRealComponent(Class param) {
         Class realComponent = components.get(param);
         LOGGER.debug("Using {} instead of {}", realComponent, param);
         return realComponent;

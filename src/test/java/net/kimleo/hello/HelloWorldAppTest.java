@@ -36,21 +36,12 @@ public class HelloWorldAppTest {
 
         when(messageFactory.create(anyString(), any(PrintStream.class))).thenReturn(message);
 
-        app = new HelloWorldApp(strategyFactory, printMessageResolver, messageFactory);
-    }
-
-    @Test
-    public void should_integrated_successfully() throws Exception {
-        app.say(message);
-
-        verify(strategyFactory).createStrategy(message, printMessageResolver);
-        verify(printMessageResolver).resolve(HELLO_WORLD_MESSAGE, stream);
-        assertEquals(message.getPayload(), HELLO_WORLD_MESSAGE);
+        app = new HelloWorldApp();
     }
 
     @Test
     public void should_run_run() throws Exception {
-        app.run();
+        app.runner(messageFactory, printMessageResolver, strategyFactory).run();
 
         verify(messageFactory).create(HELLO_WORLD_MESSAGE, System.out);
     }
