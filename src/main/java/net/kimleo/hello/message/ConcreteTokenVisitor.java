@@ -1,9 +1,9 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.inject.annotation.Component;
-import net.kimleo.inject.annotation.Inject;
 import net.kimleo.hello.text.TokenVisitor;
 import net.kimleo.hello.validate.Validator;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Inject;
 import net.kimleo.inject.annotation.Qualified;
 
 import java.io.PrintStream;

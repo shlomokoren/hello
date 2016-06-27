@@ -3,8 +3,7 @@ package net.kimleo.inject.injection;
 import net.kimleo.inject.annotation.Component;
 import net.kimleo.inject.annotation.Construct;
 import net.kimleo.inject.annotation.Qualified;
-import net.kimleo.inject.context.ApplicationContext;
-import net.kimleo.inject.context.Context;
+import net.kimleo.inject.context.DefaultApplicationContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
@@ -14,9 +13,9 @@ import static java.util.Arrays.asList;
 
 public class ConstructorInjector implements Injector {
 
-    private final Context context;
+    private final DefaultApplicationContext context;
 
-    public ConstructorInjector(ApplicationContext context) {
+    public ConstructorInjector(DefaultApplicationContext context) {
         this.context = context;
     }
 
@@ -33,9 +32,8 @@ public class ConstructorInjector implements Injector {
                     context.addComponent(param.getType());
                     Qualified qualified = param.getAnnotation(Qualified.class);
                     if (qualified != null) {
-                        objects.add(context.getQualifiedInstance(param.getType(), qualified.value()));
-                    }
-                    else
+                        objects.add(context.getInstance(param.getType(), qualified.value()));
+                    } else
                         objects.add(context.getInstance(param.getType()));
                 }
                 Object instance = ctor.newInstance(objects.toArray());
