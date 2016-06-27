@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 public @interface Factory {
     Class product() default Object.class;
 
-    public String qualifier() default "";
+    String qualifier() default "";
 }

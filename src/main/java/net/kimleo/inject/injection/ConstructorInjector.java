@@ -20,6 +20,7 @@ public class ConstructorInjector implements Injector {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T inject(Class<? extends T> clz) {
         Constructor[] constructors = clz.getDeclaredConstructors();
         Constructor ctor = getInjectedConstructor(constructors);

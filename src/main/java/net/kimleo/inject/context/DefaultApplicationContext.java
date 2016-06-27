@@ -24,20 +24,19 @@ public class DefaultApplicationContext implements ApplicationContext {
 
     private static final String SINGLETON_CREATION_METHOD = "getInstance";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultApplicationContext.class);
-    private Map<Class, Object> context = new ConcurrentHashMap<>();
-    private Map<Class, Class> components = new ConcurrentHashMap<>();
-    private List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
+    private final Map<Class, Object> context = new ConcurrentHashMap<>();
+    private final Map<Class, Class> components = new ConcurrentHashMap<>();
+    private final List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
 
-    private Multimap<Class, QualifiedComponent> qualifiedContext = HashMultimap.create();
+    private final Multimap<Class, QualifiedComponent> qualifiedContext = HashMultimap.create();
 
-    private Map<Class, Method> configurations = new ConcurrentHashMap<>();
+    private final Map<Class, Method> configurations = new ConcurrentHashMap<>();
 
-    public DefaultApplicationContext(Class... classes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public DefaultApplicationContext(Class... classes) {
         addComponents(classes);
     }
 
-    private void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
-            IllegalAccessException, InvocationTargetException {
+    private void addComponents(Class... classes) {
         for (Class aClass : classes) {
             if (aClass.getAnnotation(Config.class) != null) {
                 LOGGER.info("Configuration found {}", aClass);
@@ -61,6 +60,7 @@ public class DefaultApplicationContext implements ApplicationContext {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getInstance(Class<? extends T> aClass) {
         LOGGER.debug("Try get instance of {}", aClass);
         if (isContextComponent(aClass)) {
@@ -89,6 +89,7 @@ public class DefaultApplicationContext implements ApplicationContext {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getInstance(Class<? extends T> type, String qualified) {
         Collection<QualifiedComponent> components = qualifiedContext.get(getRealComponent(type));
         for (QualifiedComponent component : components) {
@@ -118,7 +119,7 @@ public class DefaultApplicationContext implements ApplicationContext {
         components.keySet().forEach(this::addToContextIfItIsAComponent);
     }
 
-    public void addToContextIfItIsAComponent(Class clz) {
+    private void addToContextIfItIsAComponent(Class clz) {
         if (configurations.containsKey(clz) || !clz.isInterface() && isComponentClass(clz)) {
             context.put(clz, createInstance(clz));
         }
@@ -180,6 +181,7 @@ public class DefaultApplicationContext implements ApplicationContext {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private Object createNewFactory(Class clz) {
         try {
             return clz.getDeclaredMethod(SINGLETON_CREATION_METHOD).invoke(clz);

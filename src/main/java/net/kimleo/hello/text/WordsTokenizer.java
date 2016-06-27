@@ -8,7 +8,7 @@ import static java.util.Arrays.asList;
 @Component(qualifier = "wordTokenizer")
 public class WordsTokenizer implements Tokenizer {
 
-    private TokenListFactory tokenListFactory;
+    private final TokenListFactory tokenListFactory;
 
     @Construct
     public WordsTokenizer(TokenListFactory tokenListFactory) {

@@ -24,7 +24,7 @@ public class DefaultMessageFactory implements MessageFactory {
     @Override
     public Message create(String message, PrintStream stream) {
         return new Message() {
-            private String payload = message;
+            private final String payload = message;
 
             @Override
             public String getPayload() {

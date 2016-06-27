@@ -10,7 +10,7 @@ import java.io.PrintStream;
 public class PrintMessageResolver implements MessageResolver<PrintStream> {
 
     private final MessageParser<TokenList> parser;
-    private ConcreteTokenVisitor visitor;
+    private final ConcreteTokenVisitor visitor;
 
     @Construct
     public PrintMessageResolver(MessageParser<TokenList> parser, ConcreteTokenVisitor visitor) {

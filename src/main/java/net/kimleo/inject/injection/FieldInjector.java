@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 
 public class FieldInjector implements Injector {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(FieldInjector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FieldInjector.class);
     private final DefaultApplicationContext context;
 
     public FieldInjector(DefaultApplicationContext context) {
@@ -46,7 +46,7 @@ public class FieldInjector implements Injector {
     private <T> void setField(T instance, Field field) throws IllegalAccessException {
         boolean accessible = field.isAccessible();
         field.setAccessible(true);
-        Class<?> finalType = null;
+        Class<?> finalType;
         if (isSpecifiedTypeValid(field)) {
             finalType = getSpecifiedType(field);
         } else {

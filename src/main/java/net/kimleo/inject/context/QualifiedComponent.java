@@ -1,8 +1,8 @@
 package net.kimleo.inject.context;
 
 public class QualifiedComponent {
-    private String qualifier;
-    private Object object;
+    private final String qualifier;
+    private final Object object;
 
     public QualifiedComponent(String qualifier, Object object) {
         this.qualifier = qualifier;
