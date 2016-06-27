@@ -1,12 +1,18 @@
 package net.kimleo.inject.context;
 
+import net.kimleo.inject.annotation.Bean;
 import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Config;
 import net.kimleo.inject.annotation.Factory;
 import net.kimleo.inject.injection.ConstructorInjector;
 import net.kimleo.inject.injection.FieldInjector;
 import net.kimleo.inject.injection.Injector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,10 +22,13 @@ import static java.util.Arrays.asList;
 public class ApplicationContext implements Context {
 
 
-    public static final String SINGLETON_CREATION_METHOD = "getInstance";
-    Map<Class, Object> context = new ConcurrentHashMap<>();
-    Map<Class, Class> components = new ConcurrentHashMap<>();
-    List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
+    private static final String SINGLETON_CREATION_METHOD = "getInstance";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
+    private Map<Class, Object> context = new ConcurrentHashMap<>();
+    private Map<Class, Class> components = new ConcurrentHashMap<>();
+    private List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
+
+    private Map<Class, Method> configurations = new ConcurrentHashMap<>();
 
     public ApplicationContext() {
     }
@@ -28,6 +37,16 @@ public class ApplicationContext implements Context {
     public void addComponents(Class... classes) throws NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException {
         for (Class aClass : classes) {
+            if (aClass.getAnnotation(Config.class) != null) {
+                Method[] methods = aClass.getMethods();
+                for (Method method : methods) {
+                    if (method.getAnnotation(Bean.class) != null) {
+                        Class<?> type = method.getReturnType();
+                        configurations.put(type, method);
+                        components.put(type, type);
+                    }
+                }
+            }
             addToComponentMappings(aClass);
         }
         initializeContext();
@@ -64,10 +83,12 @@ public class ApplicationContext implements Context {
 
     private void addToComponentMappings(Class clz) {
         if (isComponentClass(clz) && !clz.isInterface()) {
+            LOGGER.debug("Component {} found", clz);
             components.put(clz, clz);
             Class[] interfaces = clz.getInterfaces();
             for (Class theInterface : interfaces) {
                 if (isComponentClass(theInterface)) {
+                    LOGGER.debug("Components {} registered for interface {}", clz, theInterface);
                     components.put(theInterface, clz);
                 }
             }
@@ -75,19 +96,31 @@ public class ApplicationContext implements Context {
     }
 
     private void initializeContext() {
-        for (Class aClass : components.keySet()) {
-            addToContextIfItIsAComponent(aClass);
-        }
+        components.keySet().forEach(this::addToContextIfItIsAComponent);
     }
 
     public void addToContextIfItIsAComponent(Class clz) {
-        if (!clz.isInterface() && isComponentClass(clz)) {
+        if (configurations.containsKey(clz) || !clz.isInterface() && isComponentClass(clz)) {
             context.put(clz, createInstance(clz));
         }
     }
 
     private Object createInstance(Class clz) {
         if (context.containsKey(clz)) return context.get(clz);
+        else if (configurations.containsKey(clz)) {
+            Method method = configurations.get(clz);
+            Object configuration = createInstance(method.getDeclaringClass());
+            ArrayList<Object> params = new ArrayList<>();
+            for (Class<?> paramType : method.getParameterTypes()) {
+                params.add(getInstance(paramType));
+            }
+            Object[] paramArray = params.toArray();
+            try {
+                return method.invoke(configuration, paramArray);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
         if (clz.getAnnotation(Factory.class) != null) {
             return createNewFactory(clz);
         }
