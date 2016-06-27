@@ -1,6 +1,6 @@
 package net.kimleo.hello.strategy;
 
-import net.kimleo.hello.annotation.Component;
+import net.kimleo.inject.annotation.Component;
 
 import java.io.PrintStream;
 

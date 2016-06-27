@@ -1,7 +1,7 @@
 package net.kimleo.hello.text;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Construct;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Construct;
 
 import static java.util.Arrays.asList;
 

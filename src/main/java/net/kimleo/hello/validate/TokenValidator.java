@@ -1,6 +1,6 @@
 package net.kimleo.hello.validate;
 
-import net.kimleo.hello.annotation.Component;
+import net.kimleo.inject.annotation.Component;
 
 @Component
 public class TokenValidator implements Validator<String> {

@@ -1,7 +1,7 @@
 package net.kimleo.hello.text;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Factory;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Factory;
 
 import java.util.Iterator;
 import java.util.List;

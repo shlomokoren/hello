@@ -1,7 +1,7 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Factory;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Factory;
 import net.kimleo.hello.strategy.MessageStrategy;
 
 import java.io.PrintStream;

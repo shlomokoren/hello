@@ -1,6 +1,6 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.hello.annotation.Component;
+import net.kimleo.inject.annotation.Component;
 
 @Component
 public interface MessageParser<T> {

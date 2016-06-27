@@ -1,7 +1,7 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Inject;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Inject;
 import net.kimleo.hello.text.TokenVisitor;
 import net.kimleo.hello.validate.Validator;
 

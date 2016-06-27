@@ -1,7 +1,7 @@
 package net.kimleo.hello;
 
-import net.kimleo.hello.annotation.Application;
-import net.kimleo.hello.context.ApplicationRunner;
+import net.kimleo.inject.annotation.Application;
+import net.kimleo.inject.context.ApplicationRunner;
 import net.kimleo.hello.message.Message;
 import net.kimleo.hello.message.MessageFactory;
 import net.kimleo.hello.message.MessageResolver;
