@@ -1,6 +1,8 @@
 package net.kimleo.inject.injection;
 
+import net.kimleo.inject.annotation.Component;
 import net.kimleo.inject.annotation.Inject;
+import net.kimleo.inject.annotation.Qualified;
 import net.kimleo.inject.context.Context;
 
 import java.lang.reflect.Field;
@@ -16,6 +18,7 @@ public class FieldInjector implements Injector {
     @Override
     public <T> T inject(Class<? extends T> clz) {
         try {
+            Component an = clz.getAnnotation(Component.class);
             T instance = clz.newInstance();
 
             Field[] fields = clz.getDeclaredFields();
@@ -24,7 +27,9 @@ public class FieldInjector implements Injector {
                     setField(instance, field);
                 }
             }
-
+            if (an != null && !an.qualifier().isEmpty()) {
+                context.addQualifiedInstance(clz, an.qualifier(), instance);
+            }
             return instance;
         } catch (Exception ignored) {
         }
@@ -38,10 +43,19 @@ public class FieldInjector implements Injector {
     private <T> void setField(T instance, Field field) throws IllegalAccessException {
         boolean accessible = field.isAccessible();
         field.setAccessible(true);
+        Class<?> finalType = null;
         if (isSpecifiedTypeValid(field)) {
-            field.set(instance, context.getInstance(getSpecifiedType(field)));
+            finalType = getSpecifiedType(field);
         } else {
-            field.set(instance, context.getInstance(field.getType()));
+            finalType = field.getType();
+        }
+
+        if (field.getAnnotation(Qualified.class) != null) {
+            Qualified qualified = field.getAnnotation(Qualified.class);
+            field.set(instance, context.getQualifiedInstance(finalType, qualified.value()));
+        }
+        else {
+            field.set(instance,  context.getInstance(finalType));
         }
         field.setAccessible(accessible);
     }

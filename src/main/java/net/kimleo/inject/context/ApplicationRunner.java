@@ -21,7 +21,9 @@ public class ApplicationRunner {
             objects.add(context.getInstance(aClass));
         }
 
-        appClass.getDeclaredMethod(STARTUP_METHOD).invoke(ctor.newInstance(objects.toArray()));
+        Object newIns = ctor.newInstance(objects.toArray());
+        System.out.printf(newIns.toString());
+        appClass.getDeclaredMethod(STARTUP_METHOD).invoke(newIns);
     }
 
 }

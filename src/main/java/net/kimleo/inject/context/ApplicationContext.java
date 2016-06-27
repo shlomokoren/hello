@@ -1,18 +1,19 @@
 package net.kimleo.inject.context;
 
-import net.kimleo.inject.annotation.Bean;
-import net.kimleo.inject.annotation.Component;
-import net.kimleo.inject.annotation.Config;
-import net.kimleo.inject.annotation.Factory;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import net.kimleo.inject.annotation.*;
 import net.kimleo.inject.injection.ConstructorInjector;
 import net.kimleo.inject.injection.FieldInjector;
 import net.kimleo.inject.injection.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +28,8 @@ public class ApplicationContext implements Context {
     private Map<Class, Object> context = new ConcurrentHashMap<>();
     private Map<Class, Class> components = new ConcurrentHashMap<>();
     private List<Injector> injectors = asList(new ConstructorInjector(this), new FieldInjector(this));
+
+    private Multimap<Class, QualifiedComponent> qualifiedContext = HashMultimap.create();
 
     private Map<Class, Method> configurations = new ConcurrentHashMap<>();
 
@@ -81,6 +84,22 @@ public class ApplicationContext implements Context {
         addToContextIfItIsAComponent(getRealComponent(component));
     }
 
+    @Override
+    public <T> void addQualifiedInstance(Class<? extends T> clz, String qualifier, T instance) {
+        qualifiedContext.put(clz, new QualifiedComponent(qualifier, instance));
+    }
+
+    @Override
+    public Object getQualifiedInstance(Class<?> finalType, String qualified) {
+        Collection<QualifiedComponent> components = qualifiedContext.get(finalType);
+        for (QualifiedComponent component : components) {
+            if (component.getQualifier().equals(qualified)) {
+                return component.getObject();
+            }
+        }
+        return null;
+    }
+
     private void addToComponentMappings(Class clz) {
         if (isComponentClass(clz) && !clz.isInterface()) {
             LOGGER.debug("Component {} found", clz);
@@ -108,27 +127,47 @@ public class ApplicationContext implements Context {
     private Object createInstance(Class clz) {
         if (context.containsKey(clz)) return context.get(clz);
         else if (configurations.containsKey(clz)) {
-            Method method = configurations.get(clz);
-            Object configuration = createInstance(method.getDeclaringClass());
-            ArrayList<Object> params = new ArrayList<>();
-            for (Class<?> paramType : method.getParameterTypes()) {
-                params.add(getInstance(paramType));
-            }
-            Object[] paramArray = params.toArray();
-            try {
-                return method.invoke(configuration, paramArray);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            return createFromConfiguration(clz);
         }
         if (clz.getAnnotation(Factory.class) != null) {
-            return createNewFactory(clz);
+            Object object = createNewFactory(clz);
+            Factory annotation = (Factory) clz.getAnnotation(Factory.class);
+            if (annotation.qualifier().isEmpty()) {
+                qualifiedContext.put(clz, new QualifiedComponent("", object));
+            } else {
+                qualifiedContext.put(clz, new QualifiedComponent(annotation.qualifier(), object));
+            }
+            return object;
         }
         for (Injector injector : injectors) {
             Object instance = injector.inject(clz);
             if (instance != null) {
                 return instance;
             }
+        }
+        return null;
+    }
+
+    private Object createFromConfiguration(Class clz) {
+        Method method = configurations.get(clz);
+        Bean annotation = method.getAnnotation(Bean.class);
+        Object configuration = createInstance(method.getDeclaringClass());
+        ArrayList<Object> params = new ArrayList<>();
+        for (Class<?> paramType : method.getParameterTypes()) {
+            params.add(getInstance(paramType));
+        }
+        Object[] paramArray = params.toArray();
+        try {
+            Object object = method.invoke(configuration, paramArray);
+            qualifiedContext.put(clz, new QualifiedComponent(method.getName(), object));
+            if (annotation.qualifier().isEmpty()) {
+                qualifiedContext.put(clz, new QualifiedComponent("", object));
+            } else {
+                qualifiedContext.put(clz, new QualifiedComponent(annotation.qualifier(), object));
+            }
+            return object;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
         }
         return null;
     }
