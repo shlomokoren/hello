@@ -95,8 +95,8 @@ public class ApplicationContext implements Context {
     }
 
     @Override
-    public Object getQualifiedInstance(Class<?> finalType, String qualified) {
-        Collection<QualifiedComponent> components = qualifiedContext.get(finalType);
+    public Object getQualifiedInstance(Class<?> type, String qualified) {
+        Collection<QualifiedComponent> components = qualifiedContext.get(getRealComponent(type));
         for (QualifiedComponent component : components) {
             if (component.getQualifier().equals(qualified)) {
                 return component.getObject();

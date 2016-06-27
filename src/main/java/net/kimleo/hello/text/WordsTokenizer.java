@@ -5,7 +5,7 @@ import net.kimleo.inject.annotation.Construct;
 
 import static java.util.Arrays.asList;
 
-@Component
+@Component(qualifier = "wordTokenizer")
 public class WordsTokenizer implements Tokenizer {
 
     private TokenListFactory tokenListFactory;

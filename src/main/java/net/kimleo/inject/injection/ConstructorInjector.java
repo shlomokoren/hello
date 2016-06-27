@@ -1,10 +1,13 @@
 package net.kimleo.inject.injection;
 
+import net.kimleo.inject.annotation.Component;
 import net.kimleo.inject.annotation.Construct;
+import net.kimleo.inject.annotation.Qualified;
 import net.kimleo.inject.context.ApplicationContext;
 import net.kimleo.inject.context.Context;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
@@ -23,14 +26,24 @@ public class ConstructorInjector implements Injector {
         Constructor ctor = getInjectedConstructor(constructors);
         try {
             if (ctor != null) {
-                Class[] parameterTypes = ctor.getParameterTypes();
+                Parameter[] parameterTypes = ctor.getParameters();
                 if (parameterTypes == null || parameterTypes.length == 0) return null;
                 ArrayList<Object> objects = new ArrayList<>();
-                for (Class param : parameterTypes) {
-                    context.addComponent(param);
-                    objects.add(context.getInstance(param));
+                for (Parameter param : parameterTypes) {
+                    context.addComponent(param.getType());
+                    Qualified qualified = param.getAnnotation(Qualified.class);
+                    if (qualified != null) {
+                        objects.add(context.getQualifiedInstance(param.getType(), qualified.value()));
+                    }
+                    else
+                        objects.add(context.getInstance(param.getType()));
                 }
-                return (T) ctor.newInstance(objects.toArray());
+                Object instance = ctor.newInstance(objects.toArray());
+                Component annotation = clz.getAnnotation(Component.class);
+                if (!annotation.qualifier().isEmpty()) {
+                    context.addQualifiedInstance(clz, annotation.qualifier(), instance);
+                }
+                return (T) instance;
             }
         } catch (Exception ignored) {
         }
