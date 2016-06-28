@@ -1,8 +1,8 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Factory;
 import net.kimleo.hello.strategy.MessageStrategy;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Factory;
 
 import java.io.PrintStream;
 
@@ -24,7 +24,7 @@ public class DefaultMessageFactory implements MessageFactory {
     @Override
     public Message create(String message, PrintStream stream) {
         return new Message() {
-            private String payload = message;
+            private final String payload = message;
 
             @Override
             public String getPayload() {

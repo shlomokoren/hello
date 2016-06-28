@@ -1,8 +1,8 @@
 package net.kimleo.hello.message;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Construct;
 import net.kimleo.hello.text.TokenList;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Construct;
 
 import java.io.PrintStream;
 
@@ -10,7 +10,7 @@ import java.io.PrintStream;
 public class PrintMessageResolver implements MessageResolver<PrintStream> {
 
     private final MessageParser<TokenList> parser;
-    private ConcreteTokenVisitor visitor;
+    private final ConcreteTokenVisitor visitor;
 
     @Construct
     public PrintMessageResolver(MessageParser<TokenList> parser, ConcreteTokenVisitor visitor) {

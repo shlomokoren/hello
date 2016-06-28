@@ -1,6 +1,6 @@
 package net.kimleo.hello.text;
 
-import net.kimleo.hello.annotation.Component;
+import net.kimleo.inject.annotation.Component;
 
 @FunctionalInterface
 @Component

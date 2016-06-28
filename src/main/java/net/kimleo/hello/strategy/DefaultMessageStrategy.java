@@ -10,6 +10,7 @@ public class DefaultMessageStrategy implements MessageStrategy {
     private final MessageResolver<PrintStream> messageResolver;
     private final Message message;
 
+    @SuppressWarnings("unchecked")
     public DefaultMessageStrategy(MessageResolver messageResolver, Message message) {
         this.messageResolver = messageResolver;
         this.message = message;

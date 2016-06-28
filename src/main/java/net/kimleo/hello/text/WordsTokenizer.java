@@ -1,14 +1,14 @@
 package net.kimleo.hello.text;
 
-import net.kimleo.hello.annotation.Component;
-import net.kimleo.hello.annotation.Construct;
+import net.kimleo.inject.annotation.Component;
+import net.kimleo.inject.annotation.Construct;
 
 import static java.util.Arrays.asList;
 
-@Component
+@Component(qualifier = "wordTokenizer")
 public class WordsTokenizer implements Tokenizer {
 
-    private TokenListFactory tokenListFactory;
+    private final TokenListFactory tokenListFactory;
 
     @Construct
     public WordsTokenizer(TokenListFactory tokenListFactory) {

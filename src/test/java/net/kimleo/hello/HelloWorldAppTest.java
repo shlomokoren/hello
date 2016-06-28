@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.io.PrintStream;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class HelloWorldAppTest {
@@ -21,38 +20,30 @@ public class HelloWorldAppTest {
     private HelloWorldApp app;
     private MessageResolver printMessageResolver;
     private MessageFactory messageFactory;
-    private PrintStream stream;
+    private DefaultMessageStrategy strategy;
 
     @Before
     public void setUp() throws Exception {
         strategyFactory = mock(StrategyFactory.class);
         printMessageResolver = mock(PrintMessageResolver.class);
         messageFactory = mock(MessageFactory.class);
-        stream = mock(PrintStream.class);
-        message = DefaultMessageFactory.getInstance().create(HELLO_WORLD_MESSAGE, stream);
-        DefaultMessageStrategy strategy = new DefaultMessageStrategy(printMessageResolver, message);
+        message = mock(Message.class);
+        strategy = new DefaultMessageStrategy(printMessageResolver, message);
         when(strategyFactory.createStrategy(any(Message.class), eq(printMessageResolver)))
                 .thenReturn(strategy);
 
         when(messageFactory.create(anyString(), any(PrintStream.class))).thenReturn(message);
 
-        app = new HelloWorldApp(strategyFactory, printMessageResolver, messageFactory);
-    }
-
-    @Test
-    public void should_integrated_successfully() throws Exception {
-        app.say(message);
-
-        verify(strategyFactory).createStrategy(message, printMessageResolver);
-        verify(printMessageResolver).resolve(HELLO_WORLD_MESSAGE, stream);
-        assertEquals(message.getPayload(), HELLO_WORLD_MESSAGE);
+        app = new HelloWorldApp();
     }
 
     @Test
     public void should_run_run() throws Exception {
-        app.run();
+        app.runner(messageFactory, printMessageResolver, strategyFactory).run();
 
-        verify(messageFactory).create(HELLO_WORLD_MESSAGE, System.out);
+        verify(messageFactory).create(anyString(), any(PrintStream.class));
+        verify(strategyFactory).createStrategy(message, printMessageResolver);
+        verify(message).send(strategy);
     }
 
     @Test
