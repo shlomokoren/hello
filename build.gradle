@@ -6,6 +6,7 @@ mainClassName = 'net.kimleo.hello.HelloWorldApp'
 
 repositories {
     jcenter()
+	maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -13,7 +14,7 @@ dependencies {
     compile 'org.reflections:reflections:0.9.10'
     compile 'ch.qos.logback:logback-classic:1.1.7'
     compile 'com.google.guava:guava:18.0'
-
+	compile 'net.kimleo:inject:0.10'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
 }

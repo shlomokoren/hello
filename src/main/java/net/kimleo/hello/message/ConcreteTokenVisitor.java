@@ -12,7 +12,6 @@ import java.io.PrintStream;
 public class ConcreteTokenVisitor implements TokenVisitor {
 
     @Inject
-    @Qualified("tokenValidator")
     private Validator<String> validator;
 
     @Override
